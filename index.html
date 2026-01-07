@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KHANG VIP - Premium Trial</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #00f2ff; --secondary: #7000ff; --dark: #05050a; }
+        body { 
+            background: var(--dark); 
+            color: white; 
+            font-family: 'Poppins', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #05050a 100%);
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.03); 
+            padding: 40px; 
+            border-radius: 30px; 
+            text-align: center; 
+            border: 1px solid rgba(0, 242, 255, 0.2); 
+            width: 340px; 
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 242, 255, 0.05);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, var(--primary), transparent, transparent);
+            animation: rotate 6s linear infinite; z-index: -1;
+        }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        
+        h2 { font-family: 'Orbitron', sans-serif; letter-spacing: 3px; margin-bottom: 5px; font-weight: 700; }
+        h2 span { color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+        
+        .btn-gen { 
+            background: linear-gradient(45deg, var(--secondary), var(--primary)); 
+            color: white; border: none; padding: 15px; width: 100%; 
+            border-radius: 15px; font-weight: bold; cursor: pointer; 
+            font-size: 16px; margin-top: 25px; transition: 0.4s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-gen:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3); }
+        .btn-gen:disabled { background: #222; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        #key-box { 
+            margin-top: 25px; display: none; padding: 20px; 
+            background: rgba(0,0,0,0.6); border-radius: 15px; 
+            border: 1px solid var(--primary); animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .status-badge { font-size: 10px; background: rgba(0, 242, 255, 0.1); padding: 5px 12px; border-radius: 20px; color: var(--primary); border: 1px solid var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="status-badge">PROTECTION ACTIVE</div>
+    <h2 style="margin-top:15px;">KHANG <span>VIP</span></h2>
+    <p style="color: #888; font-size: 13px;">Premium 2-Hour Trial Access</p>
+    <i class="fas fa-microchip" style="font-size: 45px; color: var(--primary); margin: 20px 0; filter: drop-shadow(0 0 10px var(--primary));"></i>
+    
+    <button id="genBtn" onclick="generateTrial()" class="btn-gen">Generate Access Key</button>
+    
+    <div id="key-box">
+        <p style="font-size: 11px; color: #aaa; margin: 0;">USERNAME</p>
+        <p id="userD" style="color: var(--primary); font-weight: bold; font-size: 20px; margin: 2px 0 10px 0;"></p>
+        <p style="font-size: 11px; color: #aaa; margin: 0;">PASSWORD</p>
+        <p id="passD" style="color: #fff; font-weight: bold; font-size: 18px; margin: 2px 0;"></p>
+        <div style="margin-top: 10px; font-size: 10px; color: var(--primary); font-weight: bold;">AUTO-COPIED TO CLIPBOARD</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC0VsVrG4T7sEl7nZ4Zd-7OigtKWI3smvA",
+        authDomain: "codkhang-c8cb8.firebaseapp.com",
+        databaseURL: "https://codkhang-c8cb8-default-rtdb.firebaseio.com",
+        projectId: "codkhang-c8cb8",
+        storageBucket: "codkhang-c8cb8.firebasestorage.app",
+        messagingSenderId: "411020704482",
+        appId: "1:411020704482:web:861786dd37783eb8d4fcbb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const getFingerprint = () => btoa(navigator.userAgent + screen.width).substring(0, 16);
+
+    window.generateTrial = async () => {
+        const btn = document.getElementById('genBtn');
+        const fingerprint = getFingerprint();
+        const now = new Date().getTime();
+        const cooldown = 2 * 60 * 60 * 1000;
+
+        // Anti-Spam (Local)
+        if (localStorage.getItem('kh_lock') && (now - localStorage.getItem('kh_lock') < cooldown)) {
+            const rem = Math.ceil((cooldown - (now - localStorage.getItem('kh_lock'))) / 60000);
+            return Swal.fire({ icon: 'warning', title: 'Limit Reached', text: `Next key in ${rem} minutes!`, background: '#0f0f1a', color: '#fff' });
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
+        try {
+            // Anti-Share (Firebase Check)
+            const fingerRef = ref(db, `generated_ips/${fingerprint}`);
+            const snap = await get(fingerRef);
+            if (snap.exists() && (now - snap.val().time < cooldown)) {
+                btn.disabled = false;
+                btn.innerText = "Generate Access Key";
+                return Swal.fire({ icon: 'error', title: 'Denied', text: 'Device already used for trial!', background: '#0f0f1a', color: '#fff' });
+            }
+
+            const user = "TRIAL-" + Math.floor(1000 + Math.random() * 9000);
+            const pass = Math.floor(100 + Math.random() * 899).toString();
+            let exp = new Date(); exp.setHours(exp.getHours() + 2);
+
+            const trialData = { username: user, password: pass, status: "active", validity: exp.toLocaleString(), type: "trial", device: "null" };
+
+            // Save Data
+            await set(ref(db, `userinfo/${user}`), trialData);
+            await set(ref(db, `generated_ips/${fingerprint}`), { time: now });
+
+            localStorage.setItem('kh_lock', now);
+            document.getElementById('key-box').style.display = "block";
+            document.getElementById('userD').innerText = user;
+            document.getElementById('passD').innerText = pass;
+            
+            navigator.clipboard.writeText(`USER: ${user}\nPASS: ${pass}`);
+            Swal.fire({ icon: 'success', title: 'ACCESS GRANTED', text: 'Key copied to clipboard!', timer: 2500, showConfirmButton: false });
+            btn.innerText = "GENERATED";
+
+        } catch (e) {
+            Swal.fire("Error", "Server Connection Failed!", "error");
+            btn.disabled = false;
+            btn.innerText = "Generate Access Key";
+        }
+    };
+</script>
+</body>
+</html>
