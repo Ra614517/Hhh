@@ -30,9 +30,9 @@
     <div class="brand-name">KHANG<span>VIP</span></div>
     <div class="tagline">Premium Key Gen</div>
     
-    <button id="genBtn" onclick="generateTrial()" class="btn-premium" disabled>INITIALIZING...</button>
+    <button id="genBtn" onclick="generateTrial()" class="btn-premium" disabled>VERIFYING...</button>
 
-    <a href="https://t.me/your_link" target="_blank" class="btn-group">
+    <a href="https://t.me/your_telegram_link" target="_blank" class="btn-group">
         <i class="fab fa-telegram-plane"></i> JOIN OFFICIAL GROUP
     </a>
 
@@ -46,7 +46,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyC0VsVrG4T7sEl7nZ4Zd-7OigtKWI3smvA",
@@ -62,23 +62,21 @@
     const auth = urlParams.get('auth');
     const btn = document.getElementById('genBtn');
 
-    // --- ADMIN STATUS LISTENER (Real-time Fix) ---
-    const statusRef = ref(db, "system_status");
-    let systemOn = true;
-
-    onValue(statusRef, (snapshot) => {
-        const status = snapshot.val();
-        if (status === "OFF") {
-            systemOn = false;
+    // --- REAL-TIME ADMIN SYNC (settings/public_gen) ---
+    onValue(ref(db, 'settings/public_gen'), (snap) => {
+        const status = snap.val();
+        if (status === "off") {
             btn.disabled = true;
-            btn.innerText = "SYSTEM OFFLINE";
+            btn.innerText = "LINK CLOSED";
             btn.style.background = "#222";
         } else {
-            systemOn = true;
             if (auth === 'khangvip') {
                 btn.disabled = false;
                 btn.innerText = "GENERATE TRIAL";
                 btn.style.background = "#ffffff";
+            } else {
+                btn.innerText = "ACCESS DENIED";
+                btn.disabled = true;
             }
         }
     });
@@ -86,32 +84,29 @@
     if (auth === 'khangvip') {
         window.history.replaceState({}, document.title, window.location.pathname);
     } else {
-        btn.innerText = "ACCESS DENIED";
-        btn.disabled = true;
-        Swal.fire({ title: 'ERROR', text: 'Use official link!', icon: 'error', background: '#161616', color: '#fff' });
+        Swal.fire({ title: 'ERROR', text: 'Please use the official link!', icon: 'error', background: '#161616', color: '#fff' });
     }
 
     window.generateTrial = async () => {
-        if (!systemOn) return;
-
         btn.disabled = true;
-        btn.innerText = "INJECTING...";
+        btn.innerText = "GENERATING...";
 
         try {
             const user = "KVIP-" + Math.floor(1000 + Math.random() * 8999);
             const pass = Math.floor(100 + Math.random() * 899).toString();
-            let exp = new Date(); 
-            exp.setHours(exp.getHours() + 2);
+            let exp = new Date(); exp.setHours(exp.getHours() + 2);
 
-            // DATA STRUCTURE FIX: Always use 'userinfo' for Admin List
-            await set(ref(db, `userinfo/${user}`), {
+            const data = {
                 username: user,
                 password: pass,
                 status: "active",
                 validity: exp.toLocaleString(),
-                type: "trial",
-                created_at: Date.now()
-            });
+                type: "trial"
+            };
+
+            // Dashboard ma list dekhauna Dubai thau ma data pathaune
+            await set(ref(db, `userinfo/${user}`), data);
+            await set(ref(db, `trial_users/${user}`), data);
 
             document.getElementById('key-display').style.display = "block";
             document.getElementById('userD').innerText = user;
@@ -119,12 +114,11 @@
             
             navigator.clipboard.writeText(`USER: ${user}\nPASS: ${pass}`);
             Swal.fire({ title: 'SUCCESS', text: 'Key copied!', icon: 'success', background: '#161616', color: '#fff' });
-            btn.innerText = "DONE";
+            btn.innerText = "COMPLETED";
 
         } catch (e) {
-            Swal.fire({ title: 'Error', text: 'Firebase error!', icon: 'error' });
+            Swal.fire({ title: 'Error', text: 'Firebase Error!', icon: 'error' });
             btn.disabled = false;
-            btn.innerText = "GENERATE TRIAL";
         }
     };
 </script>
