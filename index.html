@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KHANG VIP | PREMIUM TRIAL</title>
+    <title>DARM ELO | PREMIUM TRIAL</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -91,12 +91,12 @@
         btn.innerText = "GENERATING...";
 
         try {
-            const user = "KVIP-" + Math.floor(1000 + Math.random() * 8999);
+            const user = "DARKFREE" + Math.floor(1000 + Math.random() * 8999);
             const pass = Math.floor(100 + Math.random() * 899).toString();
             
             // --- FIXED: Timestamp based expiry ---
             let exp = new Date(); 
-            exp.setHours(exp.getHours() + 2); 
+            exp.setHours(exp.getHours() + 24); 
             const expiryTimestamp = exp.getTime(); // Milliseconds format
 
             const data = {
@@ -116,7 +116,7 @@
             document.getElementById('passD').innerText = pass;
             
             navigator.clipboard.writeText(`USER: ${user}\nPASS: ${pass}`);
-            Swal.fire({ title: 'SUCCESS', text: 'Trial Key generated for 2 Hours!', icon: 'success', background: '#161616', color: '#fff' });
+            Swal.fire({ title: 'SUCCESS', text: 'Trial Key generated for 24 Hours!', icon: 'success', background: '#161616', color: '#fff' });
             btn.innerText = "COMPLETED";
 
         } catch (e) {
